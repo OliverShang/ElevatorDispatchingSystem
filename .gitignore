@@ -109,6 +109,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea/
+.vscode/
 
 # Spyder project settings
 .spyderproject
@@ -127,3 +129,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# QtDesigner
+.ui
+
+# Footage
+*.aep
+*.prproj
+*.mp4
+resources/Adobe Premiere Pro Auto-Save/
+resources/Adobe Premiere Pro Captured Audio/
+resources/Adobe Premiere Pro Captured Video/
