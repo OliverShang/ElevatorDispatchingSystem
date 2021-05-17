@@ -132,6 +132,7 @@ dmypy.json
 
 # QtDesigner
 .ui
+.qt_for_python/
 
 # Footage
 *.aep

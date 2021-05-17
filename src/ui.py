@@ -179,6 +179,9 @@ class UI_MainWindow(object):
             )
             self.elevator_open_animation[i].movie().setPaused(True)
             self.elevator_open_animation[i].setVisible(False)
+            self.elevator_open_animation[i].setObjectName(
+                "open_animation_" + str(i + 1)
+            )  #  从1开始编号
 
             #  关门动画，同上
             self.elevator_close_animation.append(QtWidgets.QLabel(self.central_widget))
@@ -192,6 +195,9 @@ class UI_MainWindow(object):
             )
             self.elevator_close_animation[i].movie().setPaused(True)
             self.elevator_close_animation[i].setVisible(False)
+            self.elevator_close_animation[i].setObjectName(
+                "close_animation_" + str(i + 1)
+            )  #  从1开始编号
 
             #  开门后的静态图片
             self.elevator_open_image.append(QtWidgets.QLabel(self.central_widget))
@@ -202,6 +208,9 @@ class UI_MainWindow(object):
             )
             self.elevator_open_image[i].setPixmap(QtGui.QPixmap("resources/opened.png"))
             self.elevator_open_image[i].setVisible(True)  #  除了播放动画的时候均为静态图像显示
+            self.elevator_open_image[i].setObjectName(
+                "open_image_" + str(i + 1)
+            )  #  从1开始编号
 
             #  关门后的静态图片
             self.elevator_close_image.append(QtWidgets.QLabel(self.central_widget))
@@ -214,6 +223,9 @@ class UI_MainWindow(object):
                 QtGui.QPixmap("resources/closed.png")
             )
             self.elevator_close_image[i].setVisible(True)
+            self.elevator_close_image[i].setObjectName(
+                "close_image_" + str(i + 1)
+            )  #  从1开始编号
 
             #  电梯状态上行
             self.elevator_ascending_animation.append(
@@ -230,6 +242,9 @@ class UI_MainWindow(object):
             self.elevator_ascending_animation[i].setMovie("resources/upArrow.gif")
             self.elevator_ascending_animation[i].movie().setPaused(False)
             self.elevator_ascending_animation[i].setVisible(False)
+            self.elevator_ascending_animation[i].setObjectName(
+                "ascending_animation_" + str(i + 1)
+            )  #  从1开始编号
 
             #  电梯状态下行
             self.elevator_descending_animation.append(
@@ -246,6 +261,9 @@ class UI_MainWindow(object):
             self.elevator_descending_animation[i].setMovie("resources/downArrow.gif")
             self.elevator_descending_animation[i].movie().setPaused(False)
             self.elevator_descending_animation[i].setVisible(False)
+            self.elevator_descending_animation[i].setObjectName(
+                "descending_animation_" + str(i + 1)
+            )  #  从1开始编号
 
             #  电梯序号icon
             self.elevator_enumerate_image.append(QtWidgets.QLabel(self.central_widget))
@@ -260,6 +278,9 @@ class UI_MainWindow(object):
             filename = os.curdir + "recources/enumerate" + str(i + 1) + "png"
             self.elevator_enumerate_image[i].setPixmap(QtGui.QPixmap(filename))
             self.elevator_enumerate_image[i].setVisible(True)
+            self.elevator_enumerate_image[i].setObjectName(
+                "enumerate_image_" + str(i + 1)
+            )  #  从1开始编号
 
             #  同电梯序号icon，在repair处标识
             self.elevator_repair_enumerate_image.append(
@@ -276,6 +297,9 @@ class UI_MainWindow(object):
             filename = os.curdir + "recources/enumerate" + str(i + 1) + "png"
             self.elevator_repair_enumerate_image[i].setPixmap(QtGui.QPixmap(filename))
             self.elevator_repair_enumerate_image[i].setVisible(True)
+            self.elevator_repair_enumerate_image[i].setObjectName(
+                "repair_enumerate_image_" + str(i + 1)
+            )  #  从1开始编号
 
             #  电梯楼层数码管
             self.elevator_floor.append(QtWidgets.QLCDNumber(self.central_widget))
@@ -294,12 +318,75 @@ class UI_MainWindow(object):
             self.elevator_floor[i].setMode(QtWidgets.QLCDNumber.Dec)
             self.elevator_floor[i].setSmallDevimalPoint(False)
             self.elevator_floor[i].setProperty("intValue", 1)
+            self.elevator_floor[i].setObjectName("floor_" + str(i + 1))  #  从1开始编号
 
-            #   电梯修理按钮
+            #  设置电梯内部的楼层按钮
+            for j in range(FLOOR_NUM):
+                self.elevator_floor_button[i].append(
+                    QtWidgets.QPushButton(self.central_widget)
+                )
+
+            #  电梯开门按钮
+            self.elevator_door_open_button.append(
+                QtWidgets.QPushButton(self.central_widget)
+            )
+            self.elevator_door_open_button[i].setStyleSheet("")  # TODO 加入qss
+            self.elevator_door_open_button[i].setGeometry(
+                QtCore.QRect(
+                    elevator_open_pos_x[i],
+                    elevator_open_pos_y[i],
+                    DOOR_BUTTON_X,
+                    DOOR_BUTTON_Y,
+                )
+            )
+            self.elevator_door_open_button[i].setObjectName(
+                "door_open_button_" + str(i + 1)
+            )
+            self.elevator_door_open_button[i].clicked.connect(
+                MainWindow.doorOpenClicked
+            )
+
+            #  电梯关门按钮
+            self.elevator_door_close_button.append(
+                QtWidgets.QPushButton(self.central_widget)
+            )
+            self.elevator_door_close_button[i].setStyleSheet("")  #  TODO 加入qss
+            self.elevator_door_close_button[i].setGeometry(
+                QtCore.QRect(
+                    elevator_close_pos_x[i],
+                    elevator_close_pos_y[i],
+                    DOOR_BUTTON_X,
+                    DOOR_BUTTON_Y,
+                )
+            )
+            self.elevator_door_close_button[i].setObjectName(
+                "door_close_button_" + str(i + 1)
+            )
+            self.elevator_door_close_button[i].clicked.connect(
+                MainWindow.doorCloseClicked
+            )
+
+            #  电梯报警按钮
+            self.elevator_alarm_button.append(
+                QtWidgets.QPushButton(self.central_widget)
+            )
+            self.elevator_alarm_button[i].setStyleSheet  #  TODO 加入qss
+            self.elevator_alarm_button[i].setGeometry(
+                QtCore.QRect(
+                    elevator_alarm_pos_x[i],
+                    elevator_alarm_pos_y[i],
+                    DOOR_BUTTON_X,
+                    DOOR_BUTTON_Y,
+                )
+            )
+            self.elevator_alarm_button[i].setObjectName("elevator_alarm_" + str(i + 1))
+            self.elevator_alarm_button[i].clicked.connect(MainWindow.alarmClicked)
+
+            #  电梯修理按钮
             self.elevator_repair_button.append(
                 QtWidgets.QPushButton(self.central_widget)
             )
-            self.elevator_repair_button[i].setStyleSheet(loadQSS(""))  #  待补充
+            self.elevator_repair_button[i].setStyleSheet(loadQSS(""))  #  TODO 加入qss
             self.elevator_repair_button[i].setGeometry(
                 QtCore.QRect(
                     elevator_repair_x[i],
@@ -308,6 +395,9 @@ class UI_MainWindow(object):
                     ELEV_REPAIR_SIZE,
                 )
             )
+            self.elevator_repair_button[i].setObjectName(
+                "repair_button_" + str(i + 1)
+            )  #  从1开始编号
             #  链接槽函数
             self.elevator_repair_button[i].clicked.connect(MainWindow.repairClicked)
 
@@ -325,9 +415,38 @@ def loadQSS(path):
     Returns:
         str: 字符串格式的StyleSheet
     """
-    with open(path, "r") as f:
-        return f.read()
+    if len(path):
+        with open(path, "r") as f:
+            return f.read()
 
 
-def repairClicked():
-    pass
+def doorOpenClicked(self):
+    """电梯内部开门按钮触发"""
+    _object = self.sender()
+    elevator_i = int(_object.objectName()[-1])
+    self.scheduler.responseDoorOpen(elevator_i)
+    print("电梯" + str(elevator_i) + "内部开门")
+
+
+def doorCloseClicked(self):
+    """电梯内部关门按钮触发"""
+    _object = self.sender()
+    elevator_i = int(_object.objectName()[-1])
+    self.scheduler.responseDoorClose(elevator_i)
+    print("电梯" + str(elevator_i) + "内部关门")
+
+
+def alarmClicked(self):
+    """电梯报警按钮触发"""
+    _object = self.sender()
+    elevator_i = int(_object.objectName()[-1])
+    self.scheduler.responseAlarm(elevator_i)
+    print("电梯" + str(elevator_i) + "警报触发！")
+
+
+def repairClicked(self):
+    """电梯修复触发"""
+    _object = self.sender()
+    elevator_i = int(_object.objectName()[-1])
+    self.scheduler.responseRepair(elevator_i)
+    print("电梯" + str(elevator_i) + "已恢复正常！")
