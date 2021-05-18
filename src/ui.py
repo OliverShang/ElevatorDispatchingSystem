@@ -80,7 +80,8 @@ class UI_MainWindow(object):
         #  每部电梯的楼层按钮
         self.elevator_floor_button = []
         #  外部控制的楼层按钮
-        self.external_floor_button = []
+        self.external_up_button = []
+        self.external_down_button = []
 
     #  各模块的位置
 
@@ -159,10 +160,10 @@ class UI_MainWindow(object):
 
         #  设置外部楼层按钮的位置
         for i in range(FLOOR_NUM - 1):  #  注意第一层没有向下按钮
-            external_up_button_pos_x.append(1420)
-            external_up_button_pos_y.append(600 - i * 30)
-            external_down_button_pos_x.append(1480)
-            external_down_button_pos_y.append(570 - i * 30)
+            external_up_button_pos_x.append(1560)
+            external_up_button_pos_y.append(elevator_button_pos_y[0] - i * 30)
+            external_down_button_pos_x.append(1620)
+            external_down_button_pos_y.append(elevator_button_pos_y[0] - (i + 1) * 30)
 
         #  设置动画、文字等
         #  以下设置位置以及放入动画的代码有大量重复
@@ -327,8 +328,61 @@ class UI_MainWindow(object):
             #  设置电梯内部的楼层按钮
             self.elevator_floor_button.append([])
             for j in range(FLOOR_NUM):
+                delta = 30  #  两个按钮的垂直间距
                 self.elevator_floor_button[i].append(
                     QtWidgets.QPushButton(self.central_widget)
+                )
+                self.elevator_floor_button[i][j].setStyleSheet("")  #  TODO 加入qss
+                #  elevator_floor_pos_[i]为第i个电梯的一层楼按钮坐标，y坐标减去delta推出其他楼层的坐标
+                self.elevator_floor_button[i][j].setGeometry(
+                    QtCore.QRect(
+                        elevator_button_pos_x[i],
+                        elevator_button_pos_y[i] - j * delta,
+                        FLOOR_BUTTON_X,
+                        FLOOR_BUTTON_Y,
+                    )
+                )
+                self.elevator_floor_button[i][j].setObjectName(str(i + 1) + str(j + 1))
+                self.elevator_floor_button[i][j].clicked.connect(
+                    MainWindow.floorButtonClicked
+                )
+
+            #  设置电梯外部楼层安娜
+            #  上行
+            for j in range(FLOOR_NUM - 1):
+                self.external_up_button.append(
+                    QtWidgets.QPushButton(self.central_widget)
+                )
+                self.external_up_button[j].setStyleSheet("")  #  TODO 加入qss
+                self.external_up_button[j].setGeometry(
+                    QtCore.QRect(
+                        external_up_button_pos_x[j],
+                        external_up_button_pos_y[j],
+                        FLOOR_BUTTON_X,
+                        FLOOR_BUTTON_Y,
+                    )
+                )
+                self.external_up_button[j].setObjectName(str(j + 1))
+                self.external_up_button[j].clicked.connect(
+                    MainWindow.externalUpButtonClicked
+                )
+            #  下行
+            for j in range(FLOOR_NUM - 1):
+                self.external_down_button.append(
+                    QtWidgets.QPushButton(self.central_widget)
+                )
+                self.external_down_button[j].setStyleSheet("")  #  TODO 加入qss
+                self.external_down_button[j].setGeometry(
+                    QtCore.QRect(
+                        external_down_button_pos_x[j],
+                        external_down_button_pos_y[j],
+                        FLOOR_BUTTON_X,
+                        FLOOR_BUTTON_Y,
+                    )
+                )
+                self.external_down_button[j].setObjectName(str(j + 2))  #  一楼没有下行
+                self.external_down_button[j].clicked.connect(
+                    MainWindow.externalDownButtonClicked
                 )
 
             #  电梯开门按钮
@@ -435,8 +489,30 @@ class UI_MainWindow(object):
         """电梯修复触发"""
         _object = self.sender()
         elevator_i = int(_object.objectName()[-1])
-        # self.scheduler.responseRepair(elevator_i)
+        self.scheduler.responseRepair(elevator_i)
         print("电梯" + str(elevator_i) + "已恢复正常！")
+
+    def floorButtonClicked(self):
+        """电梯内部楼层按钮触发"""
+        _object = self.sender()
+        elevator_i = int(_object.objectName()[0])
+        floor_j = int(_object.objectName()[-1])
+        self.scheduler.responseFloorButton(elevator_i, floor_j)
+        print("电梯" + str(elevator_i) + "内部按下了" + str(floor_j) + "层按钮")
+
+    def externalDownButtonClicked(self):
+        """电梯外部下行按钮触发"""
+        _object = self.sender()
+        floor_i = int(_object.objectName()[0])
+        self.scheduler.responseExternalDownButton(floor_i)
+        print("第" + str(floor_i) + "层按下了下行按钮")
+
+    def externalUpButtonClicked(self):
+        """电梯外部上行按钮触发"""
+        _object = self.sender()
+        floor_i = int(_object.objectName()[0])
+        self.scheduler.responseExternalUpButton(floor_i)
+        print("第" + str(floor_i) + "层按下了上行按钮")
 
 
 def loadQSS(path):

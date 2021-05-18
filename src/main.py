@@ -8,8 +8,8 @@ class UI(QtWidgets.QMainWindow, UI_MainWindow):
     def __init__(self):
         super(UI, self).__init__()
         self.setupUI(self)
-        self.setWindowIcon(QtGui.QIcon(os.curdir + "favicon.ico"))
-        self.setWindowTitle("OS Coursework--Elevator Dispatching Sysrem")
+        self.setWindowIcon(QtGui.QIcon("favicon.ico"))
+        self.setWindowTitle("OS Coursework--Elevator Dispatching System")
 
 
 if __name__ == "__main__":
