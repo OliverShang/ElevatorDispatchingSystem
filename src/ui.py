@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 
-from scheduler import *
+from main import Scheduler
 
 
 # 定义电梯门状态
