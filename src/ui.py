@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 
-from main import Scheduler
+from scheduler import Scheduler
 
 
 # 定义电梯门状态
@@ -86,7 +86,7 @@ class UI_MainWindow(object):
 
     def setupUI(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1606, 900)
+        MainWindow.resize(1757, 900)
         MainWindow.setStyleSheet("")
         self.central_widget = QtWidgets.QWidget(MainWindow)
         self.central_widget.setObjectName("CentralWidget")
@@ -152,8 +152,8 @@ class UI_MainWindow(object):
                 elevator_pos_x[i] + int(ELEV_ANIME_X / 2) - int(FLOOR_BUTTON_X / 2)
             )  #  此按钮40x23，只是一楼按钮的位置，其他19层使用相对位置即可计算
             elevator_button_pos_y.append(elevator_pos_y[i] - 40)
-            elevator_enumerate_repair_pos_x.append(1320 + i * 60)
-            elevator_enumerate_repair_pos_y.append(690)
+            elevator_enumerate_repair_pos_x.append(1450 + i * 60)
+            elevator_enumerate_repair_pos_y.append(710)
             elevator_repair_x.append(elevator_enumerate_repair_pos_x[i])
             elevator_repair_y.append(elevator_enumerate_repair_pos_y[i] + 50)
 
@@ -214,7 +214,7 @@ class UI_MainWindow(object):
 
             #  关门后的静态图片
             self.elevator_close_image.append(QtWidgets.QLabel(self.central_widget))
-            self.elevator_open_image[i].setGeometry(
+            self.elevator_close_image[i].setGeometry(
                 QtCore.QRect(
                     elevator_pos_x[i], elevator_pos_y[i], ELEV_ANIME_X, ELEV_ANIME_Y
                 )
@@ -239,7 +239,9 @@ class UI_MainWindow(object):
                     ELEV_STATUS_Y,
                 )
             )
-            self.elevator_ascending_animation[i].setMovie("resources/upArrow.gif")
+            self.elevator_ascending_animation[i].setMovie(
+                QtGui.QMovie("resources/upArrow.gif")
+            )
             self.elevator_ascending_animation[i].movie().setPaused(False)
             self.elevator_ascending_animation[i].setVisible(False)
             self.elevator_ascending_animation[i].setObjectName(
@@ -258,7 +260,9 @@ class UI_MainWindow(object):
                     ELEV_STATUS_Y,
                 )
             )
-            self.elevator_descending_animation[i].setMovie("resources/downArrow.gif")
+            self.elevator_descending_animation[i].setMovie(
+                QtGui.QMovie("resources/downArrow.gif")
+            )
             self.elevator_descending_animation[i].movie().setPaused(False)
             self.elevator_descending_animation[i].setVisible(False)
             self.elevator_descending_animation[i].setObjectName(
@@ -275,7 +279,7 @@ class UI_MainWindow(object):
                     ELEV_ENUM_Y,
                 )
             )
-            filename = os.curdir + "recources/enumerate" + str(i + 1) + "png"
+            filename = "resources/enumerate" + str(i + 1) + ".png"
             self.elevator_enumerate_image[i].setPixmap(QtGui.QPixmap(filename))
             self.elevator_enumerate_image[i].setVisible(True)
             self.elevator_enumerate_image[i].setObjectName(
@@ -294,7 +298,7 @@ class UI_MainWindow(object):
                     ELEV_ENUM_Y,
                 )
             )
-            filename = os.curdir + "recources/enumerate" + str(i + 1) + "png"
+            filename = "resources/enumerate" + str(i + 1) + ".png"
             self.elevator_repair_enumerate_image[i].setPixmap(QtGui.QPixmap(filename))
             self.elevator_repair_enumerate_image[i].setVisible(True)
             self.elevator_repair_enumerate_image[i].setObjectName(
@@ -316,11 +320,12 @@ class UI_MainWindow(object):
             self.elevator_floor[i].setFrameShape(QtWidgets.QFrame.Box)
             self.elevator_floor[i].setDigitCount(2)
             self.elevator_floor[i].setMode(QtWidgets.QLCDNumber.Dec)
-            self.elevator_floor[i].setSmallDevimalPoint(False)
+            self.elevator_floor[i].setSmallDecimalPoint(False)
             self.elevator_floor[i].setProperty("intValue", 1)
             self.elevator_floor[i].setObjectName("floor_" + str(i + 1))  #  从1开始编号
 
             #  设置电梯内部的楼层按钮
+            self.elevator_floor_button.append([])
             for j in range(FLOOR_NUM):
                 self.elevator_floor_button[i].append(
                     QtWidgets.QPushButton(self.central_widget)
@@ -405,6 +410,34 @@ class UI_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
+    def doorOpenClicked(self):
+        """电梯内部开门按钮触发"""
+        _object = self.sender()
+        elevator_i = int(_object.objectName()[-1])
+        self.scheduler.responseDoorOpen(elevator_i)
+        print("电梯" + str(elevator_i) + "内部开门")
+
+    def doorCloseClicked(self):
+        """电梯内部关门按钮触发"""
+        _object = self.sender()
+        elevator_i = int(_object.objectName()[-1])
+        self.scheduler.responseDoorClose(elevator_i)
+        print("电梯" + str(elevator_i) + "内部关门")
+
+    def alarmClicked(self):
+        """电梯报警按钮触发"""
+        _object = self.sender()
+        elevator_i = int(_object.objectName()[-1])
+        self.scheduler.responseAlarm(elevator_i)
+        print("电梯" + str(elevator_i) + "警报触发！")
+
+    def repairClicked(self):
+        """电梯修复触发"""
+        _object = self.sender()
+        elevator_i = int(_object.objectName()[-1])
+        # self.scheduler.responseRepair(elevator_i)
+        print("电梯" + str(elevator_i) + "已恢复正常！")
+
 
 def loadQSS(path):
     """将读入的qss文件转为字符串
@@ -418,35 +451,3 @@ def loadQSS(path):
     if len(path):
         with open(path, "r") as f:
             return f.read()
-
-
-def doorOpenClicked(self):
-    """电梯内部开门按钮触发"""
-    _object = self.sender()
-    elevator_i = int(_object.objectName()[-1])
-    self.scheduler.responseDoorOpen(elevator_i)
-    print("电梯" + str(elevator_i) + "内部开门")
-
-
-def doorCloseClicked(self):
-    """电梯内部关门按钮触发"""
-    _object = self.sender()
-    elevator_i = int(_object.objectName()[-1])
-    self.scheduler.responseDoorClose(elevator_i)
-    print("电梯" + str(elevator_i) + "内部关门")
-
-
-def alarmClicked(self):
-    """电梯报警按钮触发"""
-    _object = self.sender()
-    elevator_i = int(_object.objectName()[-1])
-    self.scheduler.responseAlarm(elevator_i)
-    print("电梯" + str(elevator_i) + "警报触发！")
-
-
-def repairClicked(self):
-    """电梯修复触发"""
-    _object = self.sender()
-    elevator_i = int(_object.objectName()[-1])
-    self.scheduler.responseRepair(elevator_i)
-    print("电梯" + str(elevator_i) + "已恢复正常！")
