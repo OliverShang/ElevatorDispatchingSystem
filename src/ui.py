@@ -1,5 +1,6 @@
+from posix import EX_IOERR
 import sys
-import os
+import os, threading
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 
@@ -464,32 +465,98 @@ class UI_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
+    def playDoorOpenAnimation(self, elevator_i: int):
+        """播放开门动画
+
+        Args:
+            elevator_i (int): 电梯编号
+        """
+        if self.scheduler.elevator_playing_animation[elevator_i] == 0:
+            self.elevator_open_image[elevator_i].setVisible(False)
+            self.elevator_close_image[elevator_i].setVisible(False)
+            self.elevator_close_animation[elevator_i].setVisible(False)
+            self.elevator_open_animation[elevator_i].movie().jumpToFrame(0)
+            self.elevator_open_animation[elevator_i].movie().start()
+            self.elevator_open_animation[elevator_i].show()
+
+            self.scheduler.elevator_playing_animation[elevator_i] = 1
+
+            thread = threading.Timer(0.8, self.stopDoorOpenAnimation, args=elevator_i)
+            thread.start()
+
+    def stopDoorOpenAnimation(self, elevator_i: int):
+        """隔壁开门动画
+
+        Args:
+            elevator_i (int): 电梯编号
+        """
+        if self.scheduler.elevator_playing_animation[elevator_i] == 1:
+            self.elevator_open_animation[elevator_i].movie().stop()
+            self.elevator_open_animation[elevator_i].setVisible(False)
+            self.elevator_open_image[elevator_i].setVisible(True)
+            self.elevator_close_image[elevator_i].setVisible(False)
+            self.elevator_close_animation[elevator_i].setVisible(False)
+            self.scheduler.elevator_playing_animation[elevator_i] = 0
+
+    def playDoorCloseAnimation(self, elevator_i: int):
+        """开始播放关门动画
+
+        Args:
+            elevator_i (int): 电梯编号
+        """
+        if self.scheduler.elevator_playing_animation[elevator_i] == 0:
+            self.elevator_open_image[elevator_i].setVisible(False)
+            self.elevator_close_image[elevator_i].setVisible(False)
+            self.elevator_close_animation[elevator_i].movie().jumpToFrame(0)
+            self.elevator_close_animation[elevator_i].setVisible(True)
+            self.elevator_open_animation[elevator_i].setVisible(False)
+            self.elevator_close_animation[elevator_i].movie().start()
+            self.elevator_close_animation[elevator_i].show()
+
+            self.scheduler.elevator_playing_animation[elevator_i] = 2
+
+            thread = threading.Timer(0.8, self.stopDoorCloseAnimation, args=elevator_i)
+
+    def stopDoorCloseAnimation(self, elevator_i: int):
+        """停止播放关门动画
+
+        Args:
+            elevator_i (int): 电梯编号
+        """
+        if self.scheduler.elevator_playing_animation[elevator_i] == 2:
+            self.elevator_close_animation[elevator_i].movie().stop()
+            self.elevator_close_image[elevator_i].setVisible(True)
+            self.elevator_close_animation[elevator_i].setVisible(False)
+            self.elevator_open_image[elevator_i].setVisible(False)
+            self.elevator_open_animation[elevator_i].setVisible(False)
+            self.scheduler.elevator_playing_animation[elevator_i] = 0
+
     def doorOpenClicked(self):
         """电梯内部开门按钮触发"""
         _object = self.sender()
         elevator_i = int(_object.objectName()[-1])
-        self.scheduler.responseDoorOpen(elevator_i)
+        self.scheduler.responseDoorOpen(elevator_i - 1)
         print("电梯" + str(elevator_i) + "内部开门")
 
     def doorCloseClicked(self):
         """电梯内部关门按钮触发"""
         _object = self.sender()
         elevator_i = int(_object.objectName()[-1])
-        self.scheduler.responseDoorClose(elevator_i)
+        self.scheduler.responseDoorClose(elevator_i - 1)
         print("电梯" + str(elevator_i) + "内部关门")
 
     def alarmClicked(self):
         """电梯报警按钮触发"""
         _object = self.sender()
         elevator_i = int(_object.objectName()[-1])
-        self.scheduler.responseAlarm(elevator_i)
+        self.scheduler.responseAlarm(elevator_i - 1)
         print("电梯" + str(elevator_i) + "警报触发！")
 
     def repairClicked(self):
         """电梯修复触发"""
         _object = self.sender()
         elevator_i = int(_object.objectName()[-1])
-        self.scheduler.responseRepair(elevator_i)
+        self.scheduler.responseRepair(elevator_i - 1)
         print("电梯" + str(elevator_i) + "已恢复正常！")
 
     def floorButtonClicked(self):
@@ -497,21 +564,21 @@ class UI_MainWindow(object):
         _object = self.sender()
         elevator_i = int(_object.objectName()[0])
         floor_j = int(_object.objectName()[-1])
-        self.scheduler.responseFloorButton(elevator_i, floor_j)
+        self.scheduler.responseFloorButton(elevator_i - 1, floor_j - 1)
         print("电梯" + str(elevator_i) + "内部按下了" + str(floor_j) + "层按钮")
 
     def externalDownButtonClicked(self):
         """电梯外部下行按钮触发"""
         _object = self.sender()
         floor_i = int(_object.objectName()[0])
-        self.scheduler.responseExternalDownButton(floor_i)
+        self.scheduler.responseExternalDownButton(floor_i - 2)
         print("第" + str(floor_i) + "层按下了下行按钮")
 
     def externalUpButtonClicked(self):
         """电梯外部上行按钮触发"""
         _object = self.sender()
         floor_i = int(_object.objectName()[0])
-        self.scheduler.responseExternalUpButton(floor_i)
+        self.scheduler.responseExternalUpButton(floor_i - 1)
         print("第" + str(floor_i) + "层按下了上行按钮")
 
 
