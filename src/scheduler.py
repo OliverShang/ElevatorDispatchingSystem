@@ -79,7 +79,7 @@ class Scheduler(object):
             self.elevator_movement_status[elevator_i] = ui.MALFUNCTION
             for button in self.main_window.elevator_floor_button[elevator_i]:
                 button.setEnabled(False)
-            self.responseDoorOpen(elevator_i)
+            self.main_window.playDoorOpenAnimation(elevator_i)
             ui.ELEV_NUM -= 1
 
     def responseRepair(self, elevator_i: int):
@@ -112,7 +112,8 @@ class Scheduler(object):
                 self.task_queue[elevator_i].append(floor_j)
             else:  #  当前楼层
                 if self.elevator_door_status[elevator_i] == ui.DOOR_CLOSED:
-                    self.responseDoorOpen(elevator_i)
+                    # self.responseDoorOpen(elevator_i)
+                    self.main_window.playDoorOpenAnimation(elevator_i)
         #  电梯当前在上升
         elif self.elevator_movement_status[elevator_i] == ui.ASCENDING:
             if self.elevator_floor[elevator_i] > floor_j:
@@ -131,6 +132,68 @@ class Scheduler(object):
                 self.inverse_task_queue[elevator_i].append(floor_j)
                 self.inverse_task_queue[elevator_i].sort()
 
+    def calculateDistance(self, floor_j: int, direction: int):
+
+        """计算外调度最优距离
+
+        Args:
+            floor_j (int): 楼层编号
+            direction (int): 方向为向上or向下
+
+        Returns:
+            tuple: (距离最优的电梯编号-1代表所有电梯都故障,最优距离)
+        """
+        distance = [999 for i in range(ui.ELEV_NUM)]
+        for elevator_i in range(ui.ELEV_NUM):
+            if self.elevator_movement_status[elevator_i] != ui.MALFUNCTION:
+                #  上升电梯
+                if (
+                    self.elevator_movement_status[elevator_i] == ui.ASCENDING
+                    and floor_j > self.elevator_floor[elevator_i]
+                    and direction == ui.UP
+                ):
+                    distance[elevator_i] = floor_j - self.elevator_floor[elevator_i]
+                #  下降or静止电梯
+                elif (
+                    self.elevator_movement_status[elevator_i] == ui.DESCENDING
+                    and floor_j < self.elevator_floor[elevator_i]
+                    and direction == ui.DOWN
+                ) or self.elevator_movement_status[elevator_i] == ui.HALT:
+                    distance[elevator_i] = abs(
+                        self.elevator_floor[elevator_i] - floor_j
+                    )
+            else:
+                distance[elevator_i] = 9999
+        res = distance.index(min(distance))
+        if res == 9999:
+            return (-1, distance[res])
+        return (res, distance[res])
+
+    def responseExternalButton(self, floor_j: int, direction: int):
+        """电梯外部调度函数
+
+        Args:
+            floor_j (int): 楼层
+            direction (int): 上行or下行
+        """
+        elevator_i, distance = self.calculateDistance(floor_j, direction)
+        if elevator_i != -1:
+            if distance == 0:
+                # self.responseDoorOpen(elevator_i)
+                # self.elevator_movement_status[elevator_i] = ui.HALT
+                self.main_window.playDoorOpenAnimation(elevator_i)
+                # self.main_window.
+                if direction == ui.UP:
+                    self.main_window.external_up_button[floor_j].setEnabled(True)
+                elif direction == ui.DOWN:
+                    self.main_window.external_down_button[floor_j].setEnabled(True)
+            else:
+                self.task_queue[elevator_i].append(floor_j)
+                #  TODO 设置成不同的样式，disable按钮
+
+        else:
+            print("所有电梯都出现故障，无法进行调度！")
+
     def updateSystemStatus(self):
         """每秒更新系统状态"""
         #  自动关门
@@ -138,6 +201,7 @@ class Scheduler(object):
             if (
                 self.elevator_playing_animation[elevator_i] == 0
                 and self.elevator_door_status[elevator_i] == ui.DOOR_OPENED
+                and self.elevator_movement_status[elevator_i] != ui.MALFUNCTION
             ):
                 self.main_window.playDoorCloseAnimation(elevator_i)
 
@@ -177,7 +241,8 @@ class Scheduler(object):
                     else:
                         self.elevator_movement_status[elevator_i] = ui.HALT
                         print("第" + str(elevator_i + 1) + "号电梯已到达目的地")
-                        self.responseDoorOpen(elevator_i)
+                        self.main_window.playDoorOpenAnimation(elevator_i)
+                        # self.responseDoorOpen(elevator_i)
                         self.main_window.elevator_floor[elevator_i].setProperty(
                             "intValue", self.elevator_floor[elevator_i]
                         )
