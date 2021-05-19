@@ -25,10 +25,10 @@ class Scheduler(object):
 
         #  队列的定义
         #  电梯内部顺路任务队列
-        self.task_queue = [[] for i in range(ui.ELEV_NUM)]
+        self.task_queue = [[] for i in range(5)]
 
         #  电梯内部不顺路任务队列
-        self.inverse_task_queue = [[] for i in range(ui.ELEV_NUM)]
+        self.inverse_task_queue = [[] for i in range(5)]
 
         #  定时器，用于控制更新电梯状态的间隔
         self.timer = QTimer()

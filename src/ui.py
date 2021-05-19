@@ -82,13 +82,14 @@ class UI_MainWindow(object):
         #  外部控制的楼层按钮
         self.external_up_button = []
         self.external_down_button = []
+        self.text_qlabel = []
 
     #  各模块的位置
 
     def setupUI(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1757, 900)
-        MainWindow.setStyleSheet("")
+        MainWindow.setStyleSheet(loadQSS("style/inner_level.qss"))
         self.central_widget = QtWidgets.QWidget(MainWindow)
         self.central_widget.setObjectName("CentralWidget")
         MainWindow.setCentralWidget(self.central_widget)
@@ -132,6 +133,9 @@ class UI_MainWindow(object):
         elevator_enumerate_repair_pos_y = []
 
         #  设置各模块的位置
+        control = QtWidgets.QLabel(self.central_widget)
+        control.setGeometry(QtCore.QRect(1600, 640, 25, 25))
+        control.setPixmap(QtGui.QPixmap("resources/externalControl.png"))
         for i in range(ELEV_NUM):
             elevator_pos_x.append(30 + i * (220 + 60))
             elevator_pos_y.append(630)
@@ -168,9 +172,22 @@ class UI_MainWindow(object):
         #  设置动画、文字等
         #  设置电梯外部楼层安娜
         #  上行
+        for j in range(FLOOR_NUM):
+            self.text_qlabel.append(QtWidgets.QLabel(self.central_widget))
+            self.text_qlabel[j].setGeometry(
+                QtCore.QRect(
+                    external_up_button_pos_x[0] - 30,
+                    external_up_button_pos_y[0] - j * 30,
+                    FLOOR_BUTTON_X,
+                    FLOOR_BUTTON_Y,
+                )
+            )
+            self.text_qlabel[j].setText(str(j + 1))
         for j in range(FLOOR_NUM - 1):
             self.external_up_button.append(QtWidgets.QPushButton(self.central_widget))
-            self.external_up_button[j].setStyleSheet("")  #  TODO 加入qss
+            self.external_up_button[j].setStyleSheet(
+                "QPushButton{border-image: url(resources/goUp.png)}"
+            )
             self.external_up_button[j].setGeometry(
                 QtCore.QRect(
                     external_up_button_pos_x[j],
@@ -184,7 +201,9 @@ class UI_MainWindow(object):
         #  下行
         for j in range(FLOOR_NUM - 1):  # j = 0是第2层
             self.external_down_button.append(QtWidgets.QPushButton(self.central_widget))
-            self.external_down_button[j].setStyleSheet("")  #  TODO 加入qss
+            self.external_down_button[j].setStyleSheet(
+                "QPushButton{border-image: url(resources/goDown.png)}"
+            )
             self.external_down_button[j].setGeometry(
                 QtCore.QRect(
                     external_down_button_pos_x[j],
@@ -358,7 +377,6 @@ class UI_MainWindow(object):
             self.elevator_floor[i].setSmallDecimalPoint(False)
             self.elevator_floor[i].setProperty("intValue", 1)
             self.elevator_floor[i].setObjectName("floor_" + str(i + 1))  #  从1开始编号
-            # BUG shit
             #  设置电梯内部的楼层按钮
             self.elevator_floor_button.append([])
             for j in range(FLOOR_NUM):
@@ -366,7 +384,9 @@ class UI_MainWindow(object):
                 self.elevator_floor_button[i].append(
                     QtWidgets.QPushButton(self.central_widget)
                 )
-                self.elevator_floor_button[i][j].setStyleSheet("")  #  TODO 加入qss
+                self.elevator_floor_button[i][j].setStyleSheet(
+                    loadQSS("style/inner_level.qss")
+                )
                 #  elevator_floor_pos_[i]为第i个电梯的一层楼按钮坐标，y坐标减去delta推出其他楼层的坐标
                 self.elevator_floor_button[i][j].setGeometry(
                     QtCore.QRect(
@@ -385,7 +405,9 @@ class UI_MainWindow(object):
             self.elevator_door_open_button.append(
                 QtWidgets.QPushButton(self.central_widget)
             )
-            self.elevator_door_open_button[i].setStyleSheet("")  # TODO 加入qss
+            self.elevator_door_open_button[i].setStyleSheet(
+                "QPushButton{border-image: url(resources/opendoor.png)}"
+            )
             self.elevator_door_open_button[i].setGeometry(
                 QtCore.QRect(
                     elevator_open_pos_x[i],
@@ -405,7 +427,9 @@ class UI_MainWindow(object):
             self.elevator_door_close_button.append(
                 QtWidgets.QPushButton(self.central_widget)
             )
-            self.elevator_door_close_button[i].setStyleSheet("")  #  TODO 加入qss
+            self.elevator_door_close_button[i].setStyleSheet(
+                "QPushButton{border-image: url(resources/closedoor.png)}"
+            )
             self.elevator_door_close_button[i].setGeometry(
                 QtCore.QRect(
                     elevator_close_pos_x[i],
@@ -425,7 +449,9 @@ class UI_MainWindow(object):
             self.elevator_alarm_button.append(
                 QtWidgets.QPushButton(self.central_widget)
             )
-            self.elevator_alarm_button[i].setStyleSheet  #  TODO 加入qss
+            self.elevator_alarm_button[i].setStyleSheet(
+                "QPushButton{border-image: url(resources/alarm.png)}"
+            )
             self.elevator_alarm_button[i].setGeometry(
                 QtCore.QRect(
                     elevator_alarm_pos_x[i],
@@ -441,7 +467,9 @@ class UI_MainWindow(object):
             self.elevator_repair_button.append(
                 QtWidgets.QPushButton(self.central_widget)
             )
-            self.elevator_repair_button[i].setStyleSheet(loadQSS(""))  #  TODO 加入qss
+            self.elevator_repair_button[i].setStyleSheet(
+                "QPushButton{border-image: url(resources/repair.png)}"
+            )
             self.elevator_repair_button[i].setGeometry(
                 QtCore.QRect(
                     elevator_repair_x[i],
@@ -455,6 +483,8 @@ class UI_MainWindow(object):
             )  #  从1开始编号
             #  链接槽函数
             self.elevator_repair_button[i].clicked.connect(MainWindow.repairClicked)
+
+        self.retranslateUi(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
