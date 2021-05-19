@@ -1,4 +1,3 @@
-from posix import EX_IOERR
 import sys
 import os, threading
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -193,7 +192,7 @@ class UI_MainWindow(object):
                 )
             )
             self.elevator_close_animation[i].setMovie(
-                QtGui.QMovie("resources/dpprClose.gif")
+                QtGui.QMovie("resources/doorClose.gif")
             )
             self.elevator_close_animation[i].movie().setPaused(True)
             self.elevator_close_animation[i].setVisible(False)
@@ -365,7 +364,7 @@ class UI_MainWindow(object):
                 )
                 self.external_up_button[j].setObjectName(str(j + 1))
                 self.external_up_button[j].clicked.connect(
-                    MainWindow.externalUpButtonClicked
+                    MainWindow.externalButtonClicked
                 )
             #  下行
             for j in range(FLOOR_NUM - 1):
@@ -383,7 +382,7 @@ class UI_MainWindow(object):
                 )
                 self.external_down_button[j].setObjectName(str(j + 2))  #  一楼没有下行
                 self.external_down_button[j].clicked.connect(
-                    MainWindow.externalDownButtonClicked
+                    MainWindow.externalButtonClicked
                 )
 
             #  电梯开门按钮
@@ -465,6 +464,17 @@ class UI_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
+    def playArrowAnimation(self, elevator_i: int, direction: int):
+        if direction == ASCENDING:
+            self.elevator_ascending_animation[elevator_i].setVisible(True)
+            self.elevator_descending_animation[elevator_i].setVisible(False)
+        elif direction == DESCENDING:
+            self.elevator_ascending_animation[elevator_i].setVisible(False)
+            self.elevator_descending_animation[elevator_i].setVisible(True)
+        else:
+            self.elevator_ascending_animation[elevator_i].setVisible(False)
+            self.elevator_descending_animation[elevator_i].setVisible(False)
+
     def playDoorOpenAnimation(self, elevator_i: int):
         """播放开门动画
 
@@ -481,7 +491,9 @@ class UI_MainWindow(object):
 
             self.scheduler.elevator_playing_animation[elevator_i] = 1
 
-            thread = threading.Timer(0.8, self.stopDoorOpenAnimation, args=elevator_i)
+            thread = threading.Timer(
+                0.8, self.stopDoorOpenAnimation, args=(elevator_i,)
+            )
             thread.start()
 
     def stopDoorOpenAnimation(self, elevator_i: int):
@@ -497,6 +509,7 @@ class UI_MainWindow(object):
             self.elevator_close_image[elevator_i].setVisible(False)
             self.elevator_close_animation[elevator_i].setVisible(False)
             self.scheduler.elevator_playing_animation[elevator_i] = 0
+            self.scheduler.elevator_door_status[elevator_i] = DOOR_OPENED
 
     def playDoorCloseAnimation(self, elevator_i: int):
         """开始播放关门动画
@@ -504,18 +517,20 @@ class UI_MainWindow(object):
         Args:
             elevator_i (int): 电梯编号
         """
-        if self.scheduler.elevator_playing_animation[elevator_i] == 0:
+        if self.scheduler.elevator_playing_animation[elevator_i] != 2:
             self.elevator_open_image[elevator_i].setVisible(False)
             self.elevator_close_image[elevator_i].setVisible(False)
-            self.elevator_close_animation[elevator_i].movie().jumpToFrame(0)
-            self.elevator_close_animation[elevator_i].setVisible(True)
+            # self.elevator_close_animation[elevator_i].setVisible(True)
             self.elevator_open_animation[elevator_i].setVisible(False)
+            self.elevator_close_animation[elevator_i].movie().jumpToFrame(0)
             self.elevator_close_animation[elevator_i].movie().start()
             self.elevator_close_animation[elevator_i].show()
 
             self.scheduler.elevator_playing_animation[elevator_i] = 2
-
-            thread = threading.Timer(0.8, self.stopDoorCloseAnimation, args=elevator_i)
+            thread = threading.Timer(
+                0.8, self.stopDoorCloseAnimation, args=(elevator_i,)
+            )
+            thread.start()
 
     def stopDoorCloseAnimation(self, elevator_i: int):
         """停止播放关门动画
@@ -523,13 +538,14 @@ class UI_MainWindow(object):
         Args:
             elevator_i (int): 电梯编号
         """
+        self.elevator_close_animation[elevator_i].movie().setPaused(True)
+        self.elevator_close_image[elevator_i].setVisible(True)
         if self.scheduler.elevator_playing_animation[elevator_i] == 2:
-            self.elevator_close_animation[elevator_i].movie().stop()
-            self.elevator_close_image[elevator_i].setVisible(True)
             self.elevator_close_animation[elevator_i].setVisible(False)
             self.elevator_open_image[elevator_i].setVisible(False)
             self.elevator_open_animation[elevator_i].setVisible(False)
             self.scheduler.elevator_playing_animation[elevator_i] = 0
+            self.scheduler.elevator_door_status[elevator_i] = DOOR_CLOSED
 
     def doorOpenClicked(self):
         """电梯内部开门按钮触发"""
@@ -567,19 +583,17 @@ class UI_MainWindow(object):
         self.scheduler.responseFloorButton(elevator_i - 1, floor_j - 1)
         print("电梯" + str(elevator_i) + "内部按下了" + str(floor_j) + "层按钮")
 
-    def externalDownButtonClicked(self):
+    def externalButtonClicked(self):
         """电梯外部下行按钮触发"""
         _object = self.sender()
         floor_i = int(_object.objectName()[0])
-        self.scheduler.responseExternalDownButton(floor_i - 2)
-        print("第" + str(floor_i) + "层按下了下行按钮")
-
-    def externalUpButtonClicked(self):
-        """电梯外部上行按钮触发"""
-        _object = self.sender()
-        floor_i = int(_object.objectName()[0])
-        self.scheduler.responseExternalUpButton(floor_i - 1)
-        print("第" + str(floor_i) + "层按下了上行按钮")
+        direction = int(_object.objectName()[-1])
+        if direction == DOWN:
+            print("第" + str(floor_i) + "层按下了下行按钮")
+            self.scheduler.responseExternalButton(floor_i - 2, direction)
+        else:
+            print("第" + str(floor_i) + "层按下了上行按钮")
+            self.scheduler.responseExternalButton(floor_i - 1, direction)
 
 
 def loadQSS(path):
