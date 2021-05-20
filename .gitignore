@@ -25,6 +25,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+other/
 MANIFEST
 
 # PyInstaller
@@ -142,3 +143,5 @@ resources/Adobe Premiere Pro Auto-Save/
 resources/Adobe Premiere Pro Captured Audio/
 resources/Adobe Premiere Pro Captured Video/
 main.exe
+操作系统课程项目1——电梯调度.pdf
+操作系统课程项目1——电梯调度.md

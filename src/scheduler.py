@@ -106,31 +106,24 @@ class Scheduler(object):
         if self.elevator_movement_status[elevator_i] == ui.MALFUNCTION:
             print("第" + str(elevator_i + 1) + "号电梯出现故障无法前往！")
 
-        #  电梯当前静止
         elif self.elevator_movement_status[elevator_i] == ui.HALT:
             if self.elevator_floor[elevator_i] != floor_j:
                 self.task_queue[elevator_i].append(floor_j)
             else:  #  当前楼层
                 if self.elevator_door_status[elevator_i] == ui.DOOR_CLOSED:
-                    # self.responseDoorOpen(elevator_i)
                     self.main_window.playDoorOpenAnimation(elevator_i)
-        #  电梯当前在上升
-        # elif self.elevator_floor[elevator_i] > floor_j:
-        # if self.elevator_movement_status[elevator_i] == ui.ASCENDING:
-        elif self.elevator_movement_status[elevator_i] == ui.ASCENDING:
-            if self.elevator_floor[elevator_i] > floor_j:
+        elif self.elevator_floor[elevator_i] > floor_j:
+            if self.elevator_movement_status[elevator_i] == ui.ASCENDING:
                 self.inverse_task_queue[elevator_i].append(floor_j)
                 self.inverse_task_queue[elevator_i].sort(reverse=True)
-            elif self.elevator_floor[elevator_i] < floor_j:
-                self.task_queue[elevator_i].append(floor_j)
-                self.task_queue[elevator_i].sort()
-
-        #  电梯当前在下降
-        else:
-            if self.elevator_floor[elevator_i] > floor_j:
+            elif self.elevator_movement_status[elevator_i] == ui.DESCENDING:
                 self.task_queue[elevator_i].append(floor_j)
                 self.task_queue[elevator_i].sort(reverse=True)
-            elif self.elevator_floor[elevator_i] < floor_j:
+        elif self.elevator_floor[elevator_i] < floor_j:
+            if self.elevator_movement_status[elevator_i] == ui.ASCENDING:
+                self.task_queue[elevator_i].append(floor_j)
+                self.task_queue[elevator_i].sort()
+            elif self.elevator_movement_status[elevator_i] == ui.DESCENDING:
                 self.inverse_task_queue[elevator_i].append(floor_j)
                 self.inverse_task_queue[elevator_i].sort()
 
