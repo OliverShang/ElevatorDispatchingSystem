@@ -115,6 +115,8 @@ class Scheduler(object):
                     # self.responseDoorOpen(elevator_i)
                     self.main_window.playDoorOpenAnimation(elevator_i)
         #  电梯当前在上升
+        # elif self.elevator_floor[elevator_i] > floor_j:
+        # if self.elevator_movement_status[elevator_i] == ui.ASCENDING:
         elif self.elevator_movement_status[elevator_i] == ui.ASCENDING:
             if self.elevator_floor[elevator_i] > floor_j:
                 self.inverse_task_queue[elevator_i].append(floor_j)

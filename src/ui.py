@@ -94,9 +94,6 @@ class UI_MainWindow(object):
         self.central_widget.setObjectName("CentralWidget")
         MainWindow.setCentralWidget(self.central_widget)
 
-        #  加载样式qss文件
-        #  按钮读入图片
-
         #  位置信息
         #  电梯的坐标
         elevator_pos_x = []
